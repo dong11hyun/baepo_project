@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 테스트 - AI 감성분석</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .section { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        textarea { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        h2 { margin-top: 0; color: #333; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🤖 AI 감성분석 API 테스트</h1>
+    
+    <div class="container">
+        <!-- 웹 인터페이스 테스트 -->
+        <div class="section">
+            <h2>🌐 웹 인터페이스 (HTML)</h2>
+            <p>기존 웹 브라우저용 인터페이스</p>
+            <button onclick="window.open('http://127.0.0.1:8000/', '_blank')">
+                웹 인터페이스 열기
+            </button>
+        </div>
+
+        <!-- API 테스트 -->
+        <div class="section">
+            <h2>🔌 REST API 테스트</h2>
+            <p>프론트엔드 연동용 JSON API</p>
+            <textarea id="apiText" rows="3" placeholder="분석할 텍스트를 입력하세요...">이 영화 정말 감동적이고 재미있었어요!</textarea>
+            <br><br>
+            <button onclick="testAPI()">API 테스트 실행</button>
+            
+            <div id="apiResult" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript/React 연동 예시 -->
+    <div class="section" style="margin-top: 30px;">
+        <h2>💻 프론트엔드 연동 코드 예시</h2>
+        
+        <h3>JavaScript (Vanilla)</h3>
+        <pre><code>const analyzeSentiment = async (text) => {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/analyze/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text: text })
+    });
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
+// 사용법
+analyzeSentiment("이 제품 정말 좋아요!")
+  .then(result => console.log(result));</code></pre>
+
+        <h3>React.js Hook 예시</h3>
+        <pre><code>import { useState } from 'react';
+
+const useSentimentAnalysis = () => {
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const analyze = async (text) => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/analyze/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      
+      const data = await response.json();
+      setResult(data);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+    setLoading(false);
+  };
+
+  return { result, loading, analyze };
+};</code></pre>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const text = document.getElementById('apiText').value;
+            const resultDiv = document.getElementById('apiResult');
+            
+            if (!text.trim()) {
+                resultDiv.innerHTML = '<div class="error">텍스트를 입력해주세요!</div>';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div>분석 중...</div>';
+            resultDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/analyze/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ 분석 성공!</h3>
+                            <p><strong>입력 텍스트:</strong> ${data.text}</p>
+                            <p><strong>감정:</strong> ${data.result.korean_label}</p>
+                            <p><strong>영어 라벨:</strong> ${data.result.label}</p>
+                            <p><strong>신뢰도:</strong> ${data.result.confidence_percent}%</p>
+                            
+                            <h4>📋 전체 응답 (JSON)</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 오류: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 네트워크 오류: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
