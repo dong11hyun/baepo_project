@@ -29,12 +29,14 @@
         <h2>분석 결과 📝</h2>
         <p><strong>입력 문장:</strong> {{ text }}</p>
         <p><strong>분석:</strong>
-            {% if result.label == 'POSITIVE' or result.label == '5 stars' or result.label == '4 stars' %}
+            {% if result.label == 'LABEL_2' or result.label == 'POSITIVE' %}
                 긍정적 😊
-            {% elif result.label == 'NEGATIVE' or result.label == '1 star' or result.label == '2 stars' %}
+            {% elif result.label == 'LABEL_0' or result.label == 'NEGATIVE' %}
                 부정적 😠
+            {% elif result.label == 'LABEL_1' or result.label == 'NEUTRAL' %}
+                중립적 �
             {% else %}
-                중립적 😐
+                {{ result.label }}
             {% endif %}
         </p>
         <p><strong>신뢰도:</strong> {{ result.score|floatformat:4 }}</p>
